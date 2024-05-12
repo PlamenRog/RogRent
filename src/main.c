@@ -7,6 +7,22 @@ bool is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 
+char* append_char(const char* str, char c) {
+    size_t len = strlen(str);
+    char* new_str = (char*)malloc(len + 2);
+
+    if (new_str == NULL) {
+        printf("Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(new_str, str);
+    new_str[len] = c;
+    new_str[len + 1] = '\0';
+
+    return new_str;
+}
+
 char* parse_string(const char* bencoded_value) {
     int length = atoi(bencoded_value);
     const char* colon_index = strchr(bencoded_value, ':');
@@ -23,14 +39,30 @@ char* parse_string(const char* bencoded_value) {
     return decoded_str;
 }
 
+char* parse_int(const char* bencoded_value) {
+    char* decoded_str = "";
+    int i = 1;
+    while (true) {
+	if (bencoded_value[i] == 'e') {
+	    break;
+	}
+	decoded_str = append_char(decoded_str, bencoded_value[i]);
+	i++;
+    }
+    return decoded_str;
+}
+
 char* decode_bencode(const char* bencoded_value) {
     char* decoded_str;
     if (is_digit(bencoded_value[0])) {
-	decoded_str = parse_string(bencoded_value);
+        decoded_str = parse_string(bencoded_value);
     }
-    // TODO: implement ints
-    if (is_digit(bencoded_value[0])) {
-	decoded_str = parse_string(bencoded_value);
+    else if (bencoded_value[0] == 'i') {
+        decoded_str = parse_int(bencoded_value);
+    }
+    else {
+        fprintf(stderr, "Unsupported data\n");
+        exit(EXIT_FAILURE);
     }
     return decoded_str;
 }
